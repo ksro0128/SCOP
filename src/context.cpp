@@ -62,8 +62,10 @@ void Context::Reshape(int width, int height) {
 
 bool Context::Init() {
     // OBJ 파일 로드
+    // m_model = Model::Load("./model/backpack.obj");
     // m_model = Model::Load("./resources/42.obj");
-    m_model = Model::Load("./resources/42.obj");
+    m_model = Model::sLoad("./resources/42.obj");
+    // m_model = Model::sLoad("./model/backpack.obj");
 
     if (!m_model) {
         std::cerr << "Failed to load model" << std::endl;
@@ -85,8 +87,7 @@ bool Context::Init() {
     }
     m_texture = Texture::CreateFromImage(image.get());
 
-
-    m_program->SetUniform("mainTexture", 0);
+    m_program->SetUniform("mainTexture", 2);
 
     // 배경색 설정
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);

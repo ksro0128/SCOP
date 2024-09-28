@@ -8,6 +8,58 @@ ModelUPtr Model::Load(const std::string& filename) {
     return std::move(model);
 }
 
+ModelUPtr Model::sLoad(const std::string& filename) {
+    auto model = ModelUPtr(new Model());
+    if (!model->LoadBysAssimp(filename))
+        return nullptr;
+    return std::move(model);
+}
+
+bool Model::LoadBysAssimp(const std::string& filename) {
+    auto aAssimp = sAssimp::Load(filename);
+    if (!aAssimp)
+        return false;
+    
+    auto vertices = aAssimp->GetVertices();
+    auto normals = aAssimp->GetNormals();
+    auto texCoords = aAssimp->GetTexCoords();
+    auto faces = aAssimp->GetFaces();
+    auto mtls = aAssimp->GetMtls();
+
+
+    std::vector<Vertex> vert;
+    vert.resize(vertices.size());
+    Vertex v;
+    for (int i = 0; i < vertices.size(); i++) {
+        v.position = vertices[i];
+        if (i < texCoords.size())
+            v.texCoord = texCoords[i];
+        else
+            v.texCoord = glm::vec2(0.0f, 0.0f);
+        if (i < normals.size())
+            v.normal = normals[i];
+        else
+            v.normal = glm::vec3(0.0f, 0.0f, 0.0f);
+        std::cout << "v " << vertices[i].x << " " << vertices[i].y << " " << vertices[i].z << std::endl;
+        vert[i] = v;
+    }
+
+    std::vector<uint32_t> indices;
+    indices.resize(faces.size() * 3);
+    for (int i = 0; i < faces.size(); i++) {
+        indices[3*i  ] = faces[i].indices[0] - 1;
+        indices[3*i+1] = faces[i].indices[1] - 1;
+        indices[3*i+2] = faces[i].indices[2] - 1;
+        std::cout << "f " << faces[i].indices[0] << " " << faces[i].indices[1] << " " << faces[i].indices[2] << std::endl;
+    }
+
+    auto glMesh = Mesh::Create(vert, indices, GL_TRIANGLES);
+    m_meshes.push_back(std::move(glMesh));
+    return true;
+}
+
+
+
 bool Model::LoadByAssimp(const std::string& filename) {
     Assimp::Importer importer;
     auto scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -62,6 +114,7 @@ void Model::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
     for (uint32_t i = 0; i < mesh->mNumVertices; i++) {
         auto& v = vertices[i];
         v.position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+        std::cout << "v " << mesh->mVertices[i].x << " " << mesh->mVertices[i].y << " " << mesh->mVertices[i].z << std::endl;
         if (mesh->HasNormals()) {
             v.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
         }
@@ -85,6 +138,7 @@ void Model::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
         indices[3*i  ] = mesh->mFaces[i].mIndices[0];
         indices[3*i+1] = mesh->mFaces[i].mIndices[1];
         indices[3*i+2] = mesh->mFaces[i].mIndices[2];
+        std::cout << "f " << mesh->mFaces[i].mIndices[0] << " " << mesh->mFaces[i].mIndices[1] << " " << mesh->mFaces[i].mIndices[2] << std::endl;
     }
 
     auto glMesh = Mesh::Create(vertices, indices, GL_TRIANGLES);

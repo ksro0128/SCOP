@@ -2,6 +2,7 @@
 #include "shader.h"
 #include "program.h"
 #include "context.h"
+#include "sAssimp.h"
 
 
 void OnFramebufferSizeChange(GLFWwindow* window, int width, int height) {

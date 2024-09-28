@@ -36,7 +36,7 @@ void Mesh::Init(const std::vector<Vertex>& vertices, const std::vector<uint32_t>
         rgbRandom.data(), sizeof(float), rgbRandom.size());
     
     m_vertexLayout->SetAttrib(3, 3, GL_FLOAT, false,
-        sizeof(float), 0);    
+        sizeof(float), 0);
 }
 
 void Mesh::Draw(const Program* program) const {

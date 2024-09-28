@@ -7,11 +7,13 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "sAssimp.h"
 
 CLASS_PTR(Model);
 class Model {
 public:
     static ModelUPtr Load(const std::string& filename);
+    static ModelUPtr sLoad(const std::string& filename);
 
     int GetMeshCount() const { return (int)m_meshes.size(); }
     MeshPtr GetMesh(int index) const { return m_meshes[index]; }
@@ -20,6 +22,7 @@ public:
 private:
     Model() {}
     bool LoadByAssimp(const std::string& filename);
+    bool LoadBysAssimp(const std::string& filename);
     void ProcessMesh(aiMesh* mesh, const aiScene* scene);
     void ProcessNode(aiNode* node, const aiScene* scene);
         

@@ -9,7 +9,7 @@
 
 struct Vertex {
     glm::vec3 position;
-    glm::vec3 rgb;
+    glm::vec3 normal;
     glm::vec2 texCoord;
 };
 
@@ -58,6 +58,7 @@ private:
     VertexLayoutUPtr m_vertexLayout;
     BufferPtr m_vertexBuffer;
     BufferPtr m_indexBuffer;
+    BufferPtr m_vertexBufferRGB;
 };
 
 #endif // __MESH_H__

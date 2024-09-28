@@ -62,22 +62,17 @@ void Model::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
     for (uint32_t i = 0; i < mesh->mNumVertices; i++) {
         auto& v = vertices[i];
         v.position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-        if (mesh->HasVertexColors(0)) {
-            v.rgb = glm::vec3(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b);
+        if (mesh->HasNormals()) {
+            v.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
         }
         else {
-            // 랜덤 색상 넣기
-            v.rgb = glm::vec3(
-                static_cast<float>(rand()) / static_cast<float>(RAND_MAX),  // 0.0 ~ 1.0 사이의 난수 생성
-                static_cast<float>(rand()) / static_cast<float>(RAND_MAX),
-                static_cast<float>(rand()) / static_cast<float>(RAND_MAX)
-                );
+            v.normal = glm::vec3(0.0f, 0.0f, 0.0f);
         }
         if (mesh->HasTextureCoords(0)) {
             v.texCoord = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
         }
         else {
-            glm::vec3 p = glm::normalize(v.position); // 정점을 단위 벡터로 변환
+            glm::vec3 p = glm::normalize(v.position);
             float uf = v.position.x;
             float vf = v.position.y;
             v.texCoord = glm::vec2(uf, vf);

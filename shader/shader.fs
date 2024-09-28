@@ -11,8 +11,6 @@ uniform float textureMix;
 
 void main() {
     vec3 tColor = texture(mainTexture, TexCoords).rgb;
-    // vec3 color = textureEnabled ? tColor : vec3(0.0, 0.0, 0.0);
-    // vec3 color = textureEnabled ? tColor : RGB;
     vec3 color = mix(RGB, tColor, textureMix);
     
     FragColor = vec4(color, 1.0);

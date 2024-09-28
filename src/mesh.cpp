@@ -20,9 +20,23 @@ void Mesh::Init(const std::vector<Vertex>& vertices, const std::vector<uint32_t>
     m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, false,
         sizeof(Vertex), 0);
     m_vertexLayout->SetAttrib(1, 3, GL_FLOAT, false,
-        sizeof(Vertex), offsetof(Vertex, rgb));
+        sizeof(Vertex), offsetof(Vertex, normal));
     m_vertexLayout->SetAttrib(2, 2, GL_FLOAT, false,
         sizeof(Vertex), offsetof(Vertex, texCoord));
+
+    std::vector<float> rgbRandom;
+    rgbRandom.resize(vertices.size() * 3);
+    for (int i = 0; i < vertices.size(); i++) {
+        rgbRandom[i * 3] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        rgbRandom[i * 3 + 1] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        rgbRandom[i * 3 + 2] = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    }
+    m_vertexBufferRGB = Buffer::CreateWithData(
+        GL_ARRAY_BUFFER, GL_STATIC_DRAW,
+        rgbRandom.data(), sizeof(float), rgbRandom.size());
+    
+    m_vertexLayout->SetAttrib(3, 3, GL_FLOAT, false,
+        sizeof(float), 0);    
 }
 
 void Mesh::Draw(const Program* program) const {

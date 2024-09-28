@@ -50,10 +50,7 @@ void Context::ProcessInput(GLFWwindow* window) {
     }
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) {
         m_textureToggled = false;  // 키를 떼면 다시 토글 가능
-    }
-
-    
-        
+    }        
 }
 
 void Context::Reshape(int width, int height) {
@@ -66,7 +63,7 @@ void Context::Reshape(int width, int height) {
 bool Context::Init() {
     // OBJ 파일 로드
     // m_model = Model::Load("./resources/42.obj");
-    m_model = Model::Load("./model/backpack.obj");
+    m_model = Model::Load("./resources/42.obj");
 
     if (!m_model) {
         std::cerr << "Failed to load model" << std::endl;

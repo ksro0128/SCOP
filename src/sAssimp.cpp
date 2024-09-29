@@ -2,10 +2,11 @@
 
 
 sAssimpUPtr sAssimp::Load(const std::string& filename) {
-    auto aAssimp = sAssimpUPtr(new sAssimp());
-    if (!aAssimp->LoadBysAssimp(filename))
+    auto ret = sAssimpUPtr(new sAssimp());
+    if (!ret->LoadBysAssimp(filename))
         return nullptr;
-    return std::move(aAssimp);
+    ret->Indexing();
+    return std::move(ret);
 }
 
 bool sAssimp::LoadBysAssimp(const std::string& filename) {
@@ -228,17 +229,18 @@ bool sAssimp::ParseFace(std::stringstream& ss) {
         }
     }
 
-    if (face.indices.size() > 3) {
-        for (int i = 1; i < face.indices.size() - 1; i++) {
-            Face tmp = { {face.indices[0], face.indices[i], face.indices[i + 1]},
-                         {face.texCoords[0], face.texCoords[i], face.texCoords[i + 1]},
-                         {face.normals[0], face.normals[i], face.normals[i + 1]} };
-            m_faces.push_back(tmp);
-        }
-    }
-    else {
-        m_faces.push_back(face);
-    }
+    // if (face.indices.size() > 3) {
+    //     for (int i = 1; i < face.indices.size() - 1; i++) {
+    //         Face tmp = { {face.indices[0], face.indices[i], face.indices[i + 1]},
+    //                      {face.texCoords[0], face.texCoords[i], face.texCoords[i + 1]},
+    //                      {face.normals[0], face.normals[i], face.normals[i + 1]} };
+    //         m_faces.push_back(tmp);
+    //     }
+    // }
+    // else {
+    //     m_faces.push_back(face);
+    // }
+    m_faces.push_back(face);
     return true;
 }
 
@@ -428,4 +430,24 @@ mtl sAssimp::InitMtl() {
     material.diffuseTex = "";
     material.specularTex = "";
     return material;
+}
+
+void sAssimp::Indexing() {
+    uint32_t index = 0;
+
+    for (auto&face : m_faces) {
+        for (int i = 0; i < face.indices.size(); i++) {
+            m_indexedVertices.push_back(&m_vertices[face.indices[i] - 1]);
+            if (face.texCoords[i] != 0)
+                m_indexedTexCoords.push_back(&m_texCoords[face.texCoords[i] - 1]);
+            if (face.normals[i] != 0)
+                m_indexedNormals.push_back(&m_normals[face.normals[i] - 1]);
+        }
+        for (int i = 0; i < face.indices.size() - 2; i++) {
+            m_indices.push_back(index);
+            m_indices.push_back(index + i + 1);
+            m_indices.push_back(index + i + 2);
+        }
+        index += face.indices.size();
+    }
 }

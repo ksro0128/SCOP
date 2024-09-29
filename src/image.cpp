@@ -1,10 +1,8 @@
 #include "image.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
 
-ImageUPtr Image::Load(const std::string& filepath) {
+ImageUPtr Image::LoadBmp(const std::string& filepath) {
     auto image = ImageUPtr(new Image());
-    if (!image->LoadWithStb(filepath))
+    if (!image->LoadWithBmp(filepath))
         return nullptr;
     return std::move(image);
 }
@@ -42,19 +40,71 @@ bool Image::Allocate(int width, int height, int channelCount) {
 
 Image::~Image() {
     if (m_data) {
-        stbi_image_free(m_data);
+        free(m_data);
     }
 }
 
-bool Image::LoadWithStb(const std::string& filepath) {
-    stbi_set_flip_vertically_on_load(true);
-    m_data = stbi_load(filepath.c_str(), &m_width, &m_height, &m_channelCount, 0);
-    if (!m_data) {
-        std::cerr << "Failed to load image: " << filepath << std::endl;
+bool Image::LoadWithBmp(const std::string& filepath) {
+    std::ifstream file(filepath, std::ios::binary);
+    if (!file) {
+        std::cerr << "Failed to open BMP file: " << filepath << std::endl;
         return false;
     }
+
+    BMPFileHeader fileHeader;
+    BMPInfoHeader infoHeader;
+
+    // Read file header
+    file.read(reinterpret_cast<char*>(&fileHeader), sizeof(fileHeader));
+    if (fileHeader.fileType != 0x4D42) { // Check for "BM"
+        std::cerr << "Invalid BMP file: " << filepath << std::endl;
+        return false;
+    }
+
+    // Read info header
+    file.read(reinterpret_cast<char*>(&infoHeader), sizeof(infoHeader));
+    if (infoHeader.bitsPerPixel != 24 && infoHeader.bitsPerPixel != 32) {
+        std::cerr << "Unsupported BMP bit depth: " << infoHeader.bitsPerPixel << std::endl;
+        return false;
+    }
+
+    // Set image dimensions and channel count
+    m_width = infoHeader.width;
+    m_height = abs(infoHeader.height); // BMP height can be negative
+    m_channelCount = infoHeader.bitsPerPixel / 8;
+
+    // Allocate memory for image data
+    m_data = (uint8_t*)malloc(m_width * m_height * m_channelCount);
+    if (!m_data) {
+        std::cerr << "Failed to allocate memory for BMP image" << std::endl;
+        return false;
+    }
+
+    // Move file cursor to pixel data
+    file.seekg(fileHeader.dataOffset, file.beg);
+
+    // Read pixel data row by row (BMP data is bottom-up by default)
+    int rowSize = (m_width * m_channelCount + 3) & ~3; // Align row size to 4-byte boundary
+    std::unique_ptr<uint8_t[]> rowData(new uint8_t[rowSize]);
+
+    for (int y = 0; y < m_height; ++y) {
+        file.read(reinterpret_cast<char*>(rowData.get()), rowSize);
+        
+        // Copy data from rowData to the original position (no vertical flipping)
+        memcpy(m_data + y * m_width * m_channelCount, rowData.get(), m_width * m_channelCount);
+    }
+
+    // Optional: Convert BGR to RGB if necessary
+    if (m_channelCount >= 3) {
+        for (int i = 0; i < m_width * m_height; ++i) {
+            uint8_t* pixel = m_data + i * m_channelCount;
+            std::swap(pixel[0], pixel[2]); // Swap R and B
+        }
+    }
+
     return true;
 }
+
 
 void Image::SetCheckImage(int gridX, int gridY) {
     for (int j = 0; j < m_height; j++) {

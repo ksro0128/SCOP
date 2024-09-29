@@ -11,27 +11,27 @@ ContextUPtr Context::Create() {
 void Context::ProcessInput(GLFWwindow* window) {
     const float moveSpeed = 0.05f;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        m_objectPos.y += moveSpeed;
-    }
-        
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        m_objectPos.y -= moveSpeed;
-    }
-        
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        m_objectPos.x += moveSpeed;
-    }
-        
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        m_objectPos.x -= moveSpeed;
-    }
-            
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
         m_objectPos.z += moveSpeed;
     }
         
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         m_objectPos.z -= moveSpeed;
+    }
+        
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        m_objectPos.x -= moveSpeed;
+    }
+        
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        m_objectPos.x += moveSpeed;
+    }
+            
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+        m_objectPos.y += moveSpeed;
+    }
+        
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+        m_objectPos.y -= moveSpeed;
     }
 
     // 스페이스바를 눌러 회전 활성화/비활성화 토글
@@ -64,8 +64,12 @@ bool Context::Init() {
     // OBJ 파일 로드
     // m_model = Model::Load("./model/backpack.obj");
     // m_model = Model::Load("./resources/42.obj");
-    m_model = Model::sLoad("./resources/42.obj");
-    // m_model = Model::sLoad("./model/backpack.obj");
+    // m_model = Model::sLoad("./resources/42.obj");
+    // m_model = Model::sLoad("./resources/teapot.obj");
+    m_model = Model::sLoad("./model/backpack.obj");
+    // m_model = Model::sLoad("./model/male.obj");
+    // m_model = Model::Load("./model/male.obj");
+    // m_model = Model::sLoad("./model/M4A1.obj");
 
     if (!m_model) {
         std::cerr << "Failed to load model" << std::endl;
@@ -80,7 +84,9 @@ bool Context::Init() {
     }
 
     // 이미지 로드
-    auto image = Image::Load("./image/awesomeface.png");
+    auto image = Image::LoadBmp("./model/backpack.bmp");
+    // auto image = Image::LoadBmp("./model/sample_image.bmp");
+    // auto image = Image::Load("./model/sample_image.bmp");
     if (!image) {
         std::cerr << "Failed to load image" << std::endl;
         return false;

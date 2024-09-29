@@ -24,16 +24,16 @@ struct mtl {
 
 CLASS_PTR(sAssimp);
 class sAssimp {
-    public:
+public:
     static sAssimpUPtr Load(const std::string& filename);
     ~sAssimp() {}
 
     // Getters
-    std::vector<glm::vec3> GetVertices() { return m_vertices; }
-    std::vector<glm::vec3> GetNormals() { return m_normals; }
-    std::vector<glm::vec2> GetTexCoords() { return m_texCoords; }
-    std::vector<Face> GetFaces() { return m_faces; }
     std::vector<mtl> GetMtls() { return m_mtls; }
+    const std::vector<glm::vec3 *>& GetIndexedVertices() { return m_indexedVertices; }
+    const std::vector<glm::vec3 *>& GetIndexedNormals() { return m_indexedNormals; }
+    const std::vector<glm::vec2 *>& GetIndexedTexCoords() { return m_indexedTexCoords; }
+    const std::vector<uint32_t>& GetIndices() { return m_indices; }
     
 
     // Debug
@@ -74,8 +74,28 @@ class sAssimp {
             std::cout << "map_Ks " << m.specularTex << std::endl;
         }
     }
+    void PrintIndexedVertices() {
+        for (auto& v : m_indexedVertices) {
+            std::cout << "v " << v->x << " " << v->y << " " << v->z << std::endl;
+        }
+    }
+    void PrintIndexedNormals() {
+        for (auto& n : m_indexedNormals) {
+            std::cout << "vn " << n->x << " " << n->y << " " << n->z << std::endl;
+        }
+    }
+    void PrintIndexedTexCoords() {
+        for (auto& t : m_indexedTexCoords) {
+            std::cout << "vt " << t->x << " " << t->y << std::endl;
+        }
+    }
+    void PrintIndices() {
+        for (int i = 0; i < m_indices.size(); i += 3) {
+            std::cout << "f " << m_indices[i] << " " << m_indices[i + 1] << " " << m_indices[i + 2] << std::endl;
+        }
+    }
 
-    private:
+private:
     sAssimp() {}
     bool LoadBysAssimp(const std::string& filename);
     bool ParseVertex(std::stringstream& ss);
@@ -86,10 +106,17 @@ class sAssimp {
     bool ParseMtlFile(const std::string& filename, const std::string& objFilename = "");
     mtl InitMtl();
     std::vector<glm::vec3> m_vertices;
-    std::vector<glm::vec3> m_normals;
     std::vector<glm::vec2> m_texCoords;
+    std::vector<glm::vec3> m_normals;
     std::vector<Face> m_faces;
     std::vector<mtl> m_mtls;
+
+    // indexing
+    void Indexing();
+    std::vector<glm::vec3 *> m_indexedVertices;
+    std::vector<glm::vec2 *> m_indexedTexCoords;
+    std::vector<glm::vec3 *> m_indexedNormals;
+    std::vector<uint32_t> m_indices;
 };
 
 #endif // SASSIMP_H

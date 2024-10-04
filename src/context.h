@@ -27,20 +27,17 @@ private:
     TextureUPtr m_texture;
     TextureUPtr m_texture2;
 
-    glm::vec3 m_objectPos { glm::vec3(0.0f, 0.0f, 0.0f) };
+    sglm::vec3 m_objectPos { sglm::vec3(0.0f, 0.0f, 0.0f) };
     bool m_rotate { false };
     bool m_rotateToggled { false };
     bool m_textureEnabled { false };
     bool m_textureToggled { false };
     float m_textureMix { 0.0f };
     
-    // clear color
-    glm::vec4 m_clearColor { glm::vec4(0.1f, 0.2f, 0.3f, 0.0f) };
-
     // camera parameters
-    glm::vec3 m_cameraPos { glm::vec3(0.0f, 0.0f, 5.0f) };
-    glm::vec3 m_cameraFront { glm::vec3(0.0f, 0.0f, -1.0f) };
-    glm::vec3 m_cameraUp { glm::vec3(0.0f, 1.0f, 0.0f) };
+    sglm::vec3 m_cameraPos { sglm::vec3(0.0f, 0.0f, 5.0f) };
+    sglm::vec3 m_cameraFront { sglm::vec3(0.0f, 0.0f, -1.0f) };
+    sglm::vec3 m_cameraUp { sglm::vec3(0.0f, 1.0f, 0.0f) };
     int m_width {WINDOW_WIDTH};
     int m_height {WINDOW_HEIGHT};
 };

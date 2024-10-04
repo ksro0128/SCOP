@@ -53,7 +53,7 @@ bool sAssimp::LoadBysAssimp(const std::string& filename) {
 }
 
 bool sAssimp::ParseVertex(std::stringstream& ss) {
-    glm::vec3 vertex;
+    sglm::vec3 vertex;
 
     std::string token;
 
@@ -63,6 +63,8 @@ bool sAssimp::ParseVertex(std::stringstream& ss) {
     if (!x.has_value())
         return false;
     vertex.x = x.value();
+    if (minX > vertex.x) minX = vertex.x;
+    if (maxX < vertex.x) maxX = vertex.x;
 
     if (!(ss >> token))
         return false;
@@ -70,6 +72,8 @@ bool sAssimp::ParseVertex(std::stringstream& ss) {
     if (!y.has_value())
         return false;
     vertex.y = y.value();
+    if (minY > vertex.y) minY = vertex.y;
+    if (maxY < vertex.y) maxY = vertex.y;
 
     if (!(ss >> token))
         return false;
@@ -77,6 +81,8 @@ bool sAssimp::ParseVertex(std::stringstream& ss) {
     if (!z.has_value())
         return false;
     vertex.z = z.value();
+    if (minZ > vertex.z) minZ = vertex.z;
+    if (maxZ < vertex.z) maxZ = vertex.z;
 
     if (ss >> token)
         return false;
@@ -86,7 +92,7 @@ bool sAssimp::ParseVertex(std::stringstream& ss) {
 }
 
 bool sAssimp::ParseTexCoord(std::stringstream& ss) {
-    glm::vec3 texCoord;
+    sglm::vec2 texCoord;
 
     std::string token;
     if (!(ss >> token))
@@ -103,25 +109,15 @@ bool sAssimp::ParseTexCoord(std::stringstream& ss) {
         return false;
     texCoord.y = v.value();
 
-    if (ss >> token) {
-        auto w = ParseFloat(token);
-        if (!w.has_value())
-            return false;
-        texCoord.z = w.value();
-
-        if (ss >> token)
-            return false;
-    }
-    else {
-        texCoord.z = 0.0f;
-    }
+    if (ss >> token)
+        return false;
 
     m_texCoords.push_back(texCoord);
     return true;
 }
 
 bool sAssimp::ParseNormal(std::stringstream& ss) {
-    glm::vec3 normal;
+    sglm::vec3 normal;
 
     std::string token;
     if (!(ss >> token))
@@ -289,7 +285,7 @@ bool sAssimp::ParseMtlFile(const std::string& filename, const std::string& objFi
                 return false;
         }
         else if (type == "Ka") {
-            glm::vec3 ambient;
+            sglm::vec3 ambient;
             std::string token;
             if (!(ss >> token))
                 return false;
@@ -318,7 +314,7 @@ bool sAssimp::ParseMtlFile(const std::string& filename, const std::string& objFi
             material.ambient = ambient;
         }
         else if (type == "Kd") {
-            glm::vec3 diffuse;
+            sglm::vec3 diffuse;
             std::string token;
             if (!(ss >> token))
                 return false;
@@ -347,7 +343,7 @@ bool sAssimp::ParseMtlFile(const std::string& filename, const std::string& objFi
             material.diffuse = diffuse;
         }
         else if (type == "Ks") {
-            glm::vec3 specular;
+            sglm::vec3 specular;
             std::string token;
             if (!(ss >> token))
                 return false;
@@ -421,9 +417,9 @@ bool sAssimp::ParseMtlFile(const std::string& filename, const std::string& objFi
 mtl sAssimp::InitMtl() {
     mtl material;
     material.name = "";
-    material.ambient = glm::vec3(1.0f);
-    material.diffuse = glm::vec3(1.0f);
-    material.specular = glm::vec3(0.0f);
+    material.ambient = sglm::vec3(1.0f);
+    material.diffuse = sglm::vec3(1.0f);
+    material.specular = sglm::vec3(0.0f);
     material.shininess = 10.0f;
     material.alpha = 1.0f;
     material.illum = 2;

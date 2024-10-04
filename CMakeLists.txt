@@ -20,7 +20,8 @@ add_executable(${PROJECT_NAME}
     src/texture.cpp src/texture.h
     src/mesh.cpp src/mesh.h
     src/model.cpp src/model.h
-    src/sAssimp.cpp src/sAssimp.h)
+    src/sAssimp.cpp src/sAssimp.h
+    src/sglm.cpp src/sglm.h)
 
 include(Dependency.cmake)
 

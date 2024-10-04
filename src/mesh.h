@@ -8,9 +8,9 @@
 #include "program.h"
 
 struct Vertex {
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec2 texCoord;
+    sglm::vec3 position;
+    sglm::vec3 normal;
+    sglm::vec2 texCoord;
 };
 
 CLASS_PTR(Material);
@@ -34,7 +34,6 @@ public:
         const std::vector<Vertex>& vertices,
         const std::vector<uint32_t>& indices,
         uint32_t primitiveType);
-    static MeshUPtr CreateBox();
     void SetMaterial(MaterialPtr material) { m_material = material; }
     MaterialPtr GetMaterial() const { return m_material; }
 

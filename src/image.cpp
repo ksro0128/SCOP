@@ -14,22 +14,6 @@ ImageUPtr Image::Create(int width, int height, int channelCount) {
     return std::move(image);
 }
 
-ImageUPtr Image::CreateSingleColorImage(
-    int width, int height, const glm::vec4& color) {
-    glm::vec4 clamped = glm::clamp(color * 255.0f, 0.0f, 255.0f);
-    uint8_t rgba[4] = {
-        (uint8_t)clamped.r, 
-        (uint8_t)clamped.g, 
-        (uint8_t)clamped.b, 
-        (uint8_t)clamped.a, 
-    };
-    auto image = Create(width, height, 4);
-    for (int i = 0; i < width * height; i++) {
-        memcpy(image->m_data + 4 * i, rgba, 4);
-    }
-    return std::move(image);
-}
-
 bool Image::Allocate(int width, int height, int channelCount) {
     m_width = width;
     m_height = height;
@@ -54,16 +38,16 @@ bool Image::LoadWithBmp(const std::string& filepath) {
     BMPFileHeader fileHeader;
     BMPInfoHeader infoHeader;
 
-    // Read file header
+    // Read file header 14 bytes
     file.read(reinterpret_cast<char*>(&fileHeader), sizeof(fileHeader));
     if (fileHeader.fileType != 0x4D42) { // Check for "BM"
         std::cerr << "Invalid BMP file: " << filepath << std::endl;
         return false;
     }
 
-    // Read info header
+    // Read info header 40 bytes
     file.read(reinterpret_cast<char*>(&infoHeader), sizeof(infoHeader));
-    if (infoHeader.bitsPerPixel != 24 && infoHeader.bitsPerPixel != 32) {
+    if (infoHeader.bitsPerPixel != 24 && infoHeader.bitsPerPixel != 32) { // 24 bits : RGB, 32 bits : RGBA
         std::cerr << "Unsupported BMP bit depth: " << infoHeader.bitsPerPixel << std::endl;
         return false;
     }
@@ -90,21 +74,19 @@ bool Image::LoadWithBmp(const std::string& filepath) {
     for (int y = 0; y < m_height; ++y) {
         file.read(reinterpret_cast<char*>(rowData.get()), rowSize);
         
-        // Copy data from rowData to the original position (no vertical flipping)
+        // Copy data from rowData to the original position
         memcpy(m_data + y * m_width * m_channelCount, rowData.get(), m_width * m_channelCount);
     }
 
-    // Optional: Convert BGR to RGB if necessary
+    // Convert BGR to RGB
     if (m_channelCount >= 3) {
-        for (int i = 0; i < m_width * m_height; ++i) {
+        for (int i = 0; i < m_width * m_height; i++) {
             uint8_t* pixel = m_data + i * m_channelCount;
             std::swap(pixel[0], pixel[2]); // Swap R and B
         }
     }
-
     return true;
 }
-
 
 void Image::SetCheckImage(int gridX, int gridY) {
     for (int j = 0; j < m_height; j++) {

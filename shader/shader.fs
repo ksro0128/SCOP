@@ -6,7 +6,6 @@ in vec3 RGB;
 in vec2 TexCoords;
 
 uniform sampler2D mainTexture;
-uniform bool textureEnabled;
 uniform float textureMix;
 
 void main() {

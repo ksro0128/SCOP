@@ -62,14 +62,7 @@ void Context::Reshape(int width, int height) {
 
 bool Context::Init() {
     // OBJ 파일 로드
-    // m_model = Model::Load("./model/backpack.obj");
-    // m_model = Model::Load("./resources/42.obj");
-    // m_model = Model::sLoad("./resources/42.obj");
-    // m_model = Model::sLoad("./resources/teapot.obj");
     m_model = Model::sLoad("./model/backpack.obj");
-    // m_model = Model::sLoad("./model/male.obj");
-    // m_model = Model::Load("./model/male.obj");
-    // m_model = Model::sLoad("./model/M4A1.obj");
 
     if (!m_model) {
         std::cerr << "Failed to load model" << std::endl;
@@ -85,15 +78,13 @@ bool Context::Init() {
 
     // 이미지 로드
     auto image = Image::LoadBmp("./model/backpack.bmp");
-    // auto image = Image::LoadBmp("./model/sample_image.bmp");
-    // auto image = Image::Load("./model/sample_image.bmp");
     if (!image) {
         std::cerr << "Failed to load image" << std::endl;
         return false;
     }
     m_texture = Texture::CreateFromImage(image.get());
 
-    m_program->SetUniform("mainTexture", 2);
+    m_program->SetUniform("mainTexture", 0);
 
     // 배경색 설정
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -106,36 +97,32 @@ void Context::Render() {
     glEnable(GL_DEPTH_TEST);
 
     // 카메라 및 변환 행렬 설정
-    auto projection = glm::perspective(glm::radians(45.0f), (float)m_width / (float)m_height, 0.1f, 100.0f);
-    auto view = glm::lookAt(m_cameraPos, m_cameraPos + m_cameraFront, m_cameraUp);
+    auto projection = sglm::perspective(sglm::radians(45.0f), (float)m_width / (float)m_height, 0.1f, 100.0f);
+    auto view = sglm::lookAt(m_cameraPos, m_cameraPos + m_cameraFront, m_cameraUp);
 
-    auto model = glm::mat4(1.0f);  // 모델 행렬 (초기 위치)
-    model = glm::translate(model, m_objectPos);  // 모델 이동
+    auto model = sglm::mat4(1.0f);  // 모델 행렬 (초기 위치)
+    model = sglm::translate(model, m_objectPos);  // 모델 이동
 
     // 모델 회전
     static float angle = 0.0f;
     if (m_rotate) {
         angle += 0.5f;
     }
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = sglm::rotate(model, sglm::radians(angle), sglm::vec3(0.0f, 1.0f, 0.0f));
     // 셰이더 사용 및 변환 행렬 전달
     m_program->Use();
     m_program->SetUniform("view", view);
     m_program->SetUniform("projection", projection);
     m_program->SetUniform("model", model);
-
-
     if (m_textureEnabled) {
         if (m_textureMix < 1.0f) {
             m_textureMix += 0.01f;
         }
-        m_program->SetUniform("textureEnabled", true);
     }
     else {
         if (m_textureMix > 0.0f) {
             m_textureMix -= 0.01f;
         }
-        m_program->SetUniform("textureEnabled", false);
     }
     m_program->SetUniform("textureMix", m_textureMix);
 

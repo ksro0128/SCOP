@@ -12,9 +12,9 @@ struct Face {
 
 struct mtl {
     std::string name;           // newmtl
-    glm::vec3 ambient;          // Ka
-    glm::vec3 diffuse;          // Kd
-    glm::vec3 specular;         // Ks
+    sglm::vec3 ambient;          // Ka
+    sglm::vec3 diffuse;          // Kd
+    sglm::vec3 specular;         // Ks
     float shininess;            // Ns
     float alpha;                // d
     int illum;                  // illum
@@ -30,11 +30,17 @@ public:
 
     // Getters
     std::vector<mtl> GetMtls() { return m_mtls; }
-    const std::vector<glm::vec3 *>& GetIndexedVertices() { return m_indexedVertices; }
-    const std::vector<glm::vec3 *>& GetIndexedNormals() { return m_indexedNormals; }
-    const std::vector<glm::vec2 *>& GetIndexedTexCoords() { return m_indexedTexCoords; }
+    const std::vector<sglm::vec3 *>& GetIndexedVertices() { return m_indexedVertices; }
+    const std::vector<sglm::vec3 *>& GetIndexedNormals() { return m_indexedNormals; }
+    const std::vector<sglm::vec2 *>& GetIndexedTexCoords() { return m_indexedTexCoords; }
     const std::vector<uint32_t>& GetIndices() { return m_indices; }
-    
+    float GetMinX() { return minX; }
+    float GetMaxX() { return maxX; }
+    float GetMinY() { return minY; }
+    float GetMaxY() { return maxY; }
+    float GetMinZ() { return minZ; }
+    float GetMaxZ() { return maxZ; }
+
 
     // Debug
     void PrintVertices() {
@@ -105,17 +111,21 @@ private:
     bool ParseMtl(std::stringstream& ss, const std::string& objFilename);
     bool ParseMtlFile(const std::string& filename, const std::string& objFilename = "");
     mtl InitMtl();
-    std::vector<glm::vec3> m_vertices;
-    std::vector<glm::vec2> m_texCoords;
-    std::vector<glm::vec3> m_normals;
+    std::vector<sglm::vec3> m_vertices;
+    std::vector<sglm::vec2> m_texCoords;
+    std::vector<sglm::vec3> m_normals;
     std::vector<Face> m_faces;
     std::vector<mtl> m_mtls;
 
+    float minX = float(INT_MAX), maxX = float(INT_MIN);
+    float minY = float(INT_MAX), maxY = float(INT_MIN);
+    float minZ = float(INT_MAX), maxZ = float(INT_MIN);
+
     // indexing
     void Indexing();
-    std::vector<glm::vec3 *> m_indexedVertices;
-    std::vector<glm::vec2 *> m_indexedTexCoords;
-    std::vector<glm::vec3 *> m_indexedNormals;
+    std::vector<sglm::vec3 *> m_indexedVertices;
+    std::vector<sglm::vec2 *> m_indexedTexCoords;
+    std::vector<sglm::vec3 *> m_indexedNormals;
     std::vector<uint32_t> m_indices;
 };
 

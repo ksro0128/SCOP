@@ -28,8 +28,15 @@ private:
     TextureUPtr m_texture2;
 
     sglm::vec3 m_objectPos { sglm::vec3(0.0f, 0.0f, 0.0f) };
-    bool m_rotate { false };
-    bool m_rotateToggled { false };
+
+    bool m_rotateX { false };
+    bool m_rotateY { false };
+    bool m_rotateZ { false };
+
+    bool m_rotateXToggled { false };
+    bool m_rotateYToggled { false };
+    bool m_rotateZToggled { false };
+
     bool m_textureEnabled { false };
     bool m_textureToggled { false };
     float m_textureMix { 0.0f };

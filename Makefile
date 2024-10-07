@@ -22,11 +22,12 @@ building:
 clean:
 	rm -rf $(BUILD_DIR)
 
-fclean : clean
+fclean : 
+	make clean
 	rm -f $(TARGET)
 
 re: 
-	fclean 
-	all
+	make fclean 
+	make all
 
 .PHONY: all configure building clean fclean re

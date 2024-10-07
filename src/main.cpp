@@ -1,7 +1,10 @@
+// #define _CRTDBG_MAP_ALLOC
 #include "common.h"
 #include "shader.h"
 #include "program.h"
 #include "context.h"
+// #include <cstdlib>
+// #include <crtdbg.h>
 
 
 void OnFramebufferSizeChange(GLFWwindow* window, int width, int height) {
@@ -16,8 +19,16 @@ void OnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
     }
 }
 
+int main(int argc, char* argv[]) {
 
-int main() {
+    // 메모리 릭 감지 활성화
+    // _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
+    // 릭 확인
+    // int* leak = (int*)malloc(sizeof(int) * 100);
+    // leak[5] = 10;
+    // leak = nullptr;  // 메모리 해제하지 않음
+
     // glfw 라이브러리 초기화, 실패하면 에러 출력후 종료
     if (!glfwInit()) {
         const char* description = nullptr;
@@ -46,6 +57,7 @@ int main() {
         glfwTerminate();
         return -1;
     }
+
     auto context = Context::Create();
     if (!context) {
         std::cerr << "failed to create context" << std::endl;
@@ -68,5 +80,8 @@ int main() {
     }
     context.reset();
     glfwTerminate();
+
+    //릭 감지 결과 출력
+    // _CrtDumpMemoryLeaks();
     return 0;
 }

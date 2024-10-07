@@ -15,7 +15,9 @@ bool sAssimp::LoadBysAssimp(const std::string& filename) {
     if (!result.has_value())
         return false;
 
-    if (filename.substr(filename.find_last_of(".") + 1) != "obj") {
+    size_t lastOfPointIndex = filename.find_last_of(".");
+    std::string obj = filename.substr(lastOfPointIndex);
+    if (obj != ".obj") {
         std::cerr << "failed to load model: " << filename << " is not a Wavefront OBJ file" << std::endl;
         return false;
     }
@@ -28,24 +30,34 @@ bool sAssimp::LoadBysAssimp(const std::string& filename) {
         std::string type;
         ss >> type;
         if (type == "v") {
-            if (!ParseVertex(ss))
+            if (!ParseVertex(ss)) {
+                std::cout << "failed to parse vertex" << std::endl;
                 return false;
+            }
         }
         else if (type == "vt") {
-            if (!ParseTexCoord(ss))
+            if (!ParseTexCoord(ss)) {
+                std::cout << "failed to parse texcoord" << std::endl;
                 return false;
+            }
         }
         else if (type == "vn") {
-            if (!ParseNormal(ss))
+            if (!ParseNormal(ss)) {
+                std::cout << "failed to parse normal" << std::endl;
                 return false;
+            }
         }
         else if (type == "f") {
-            if (!ParseFace(ss))
+            if (!ParseFace(ss)) {
+                std::cout << "failed to parse face" << std::endl;
                 return false;
+            }
         }
         else if (type == "mtllib") {
-            if (!ParseMtl(ss, filename))
+            if (!ParseMtl(ss, filename)) {
+                std::cout << "failed to parse mtl" << std::endl;
                 return false;
+            }
         }
     }
 
@@ -110,7 +122,11 @@ bool sAssimp::ParseTexCoord(std::stringstream& ss) {
     texCoord.y = v.value();
 
     if (ss >> token)
-        return false;
+    {
+        auto w = ParseFloat(token);
+        if (!w.has_value())
+            return false;
+    }
 
     m_texCoords.push_back(texCoord);
     return true;
@@ -224,18 +240,6 @@ bool sAssimp::ParseFace(std::stringstream& ss) {
             }
         }
     }
-
-    // if (face.indices.size() > 3) {
-    //     for (int i = 1; i < face.indices.size() - 1; i++) {
-    //         Face tmp = { {face.indices[0], face.indices[i], face.indices[i + 1]},
-    //                      {face.texCoords[0], face.texCoords[i], face.texCoords[i + 1]},
-    //                      {face.normals[0], face.normals[i], face.normals[i + 1]} };
-    //         m_faces.push_back(tmp);
-    //     }
-    // }
-    // else {
-    //     m_faces.push_back(face);
-    // }
     m_faces.push_back(face);
     return true;
 }

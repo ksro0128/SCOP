@@ -9,7 +9,7 @@ ContextUPtr Context::Create() {
 }
 
 void Context::ProcessInput(GLFWwindow* window) {
-    const float moveSpeed = 0.05f;
+    const float moveSpeed = 0.2f;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         m_objectPos.z += moveSpeed;
     }
@@ -34,15 +34,6 @@ void Context::ProcessInput(GLFWwindow* window) {
         m_objectPos.y -= moveSpeed;
     }
 
-    // 스페이스바를 눌러 회전 활성화/비활성화 토글
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !m_rotateToggled) {
-        m_rotate = !m_rotate;  // 회전 상태 토글
-        m_rotateToggled = true;
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-        m_rotateToggled = false;  // 키를 떼면 다시 토글 가능
-    }
-
     // T 키를 눌러 텍스쳐 활성화/비활성화 토글
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS && !m_textureToggled) {
         m_textureEnabled = !m_textureEnabled;  // 텍스쳐 상태 토글
@@ -50,7 +41,32 @@ void Context::ProcessInput(GLFWwindow* window) {
     }
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) {
         m_textureToggled = false;  // 키를 떼면 다시 토글 가능
-    }        
+    }
+
+    // 1, 2, 3 키를 눌러 X, Y, Z축 회전 활성화/비활성화 토글
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !m_rotateXToggled) {
+        m_rotateX = !m_rotateX;  // X축 회전 상태 토글
+        m_rotateXToggled = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE) {
+        m_rotateXToggled = false;  // 키를 떼면 다시 토글 가능
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !m_rotateYToggled) {
+        m_rotateY = !m_rotateY;  // Y축 회전 상태 토글
+        m_rotateYToggled = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE) {
+        m_rotateYToggled = false;  // 키를 떼면 다시 토글 가능
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS && !m_rotateZToggled) {
+        m_rotateZ = !m_rotateZ;  // Z축 회전 상태 토글
+        m_rotateZToggled = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_RELEASE) {
+        m_rotateZToggled = false;  // 키를 떼면 다시 토글 가능
+    }
 }
 
 void Context::Reshape(int width, int height) {
@@ -62,7 +78,7 @@ void Context::Reshape(int width, int height) {
 
 bool Context::Init() {
     // OBJ 파일 로드
-    m_model = Model::sLoad("./model/backpack.obj");
+    m_model = Model::sLoad("./resources/42.obj");
 
     if (!m_model) {
         std::cerr << "Failed to load model" << std::endl;
@@ -76,15 +92,18 @@ bool Context::Init() {
         return false;
     }
 
-    // 이미지 로드
-    auto image = Image::LoadBmp("./model/backpack.bmp");
-    if (!image) {
-        std::cerr << "Failed to load image" << std::endl;
-        return false;
-    }
-    m_texture = Texture::CreateFromImage(image.get());
+    // 텍스쳐 이미지 로드
+    // if (textureFilename != "") {
+        auto image = Image::LoadBmp("./resources/sample.bmp");
+        if (!image) {
+            std::cerr << "Failed to load image" << std::endl;
+            return false;
+        }
+        m_texture = Texture::CreateFromImage(image.get());
 
-    m_program->SetUniform("mainTexture", 0);
+        m_program->SetUniform("mainTexture", 0);
+    // }
+
 
     // 배경색 설정
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -97,18 +116,40 @@ void Context::Render() {
     glEnable(GL_DEPTH_TEST);
 
     // 카메라 및 변환 행렬 설정
-    auto projection = sglm::perspective(sglm::radians(45.0f), (float)m_width / (float)m_height, 0.1f, 100.0f);
+    auto projection = sglm::perspective(sglm::radians(45.0f), (float)m_width / (float)m_height, 0.1f, 1000.0f);
     auto view = sglm::lookAt(m_cameraPos, m_cameraPos + m_cameraFront, m_cameraUp);
 
     auto model = sglm::mat4(1.0f);  // 모델 행렬 (초기 위치)
     model = sglm::translate(model, m_objectPos);  // 모델 이동
 
     // 모델 회전
-    static float angle = 0.0f;
-    if (m_rotate) {
-        angle += 0.5f;
+    static float angleX = 0.0f;
+    static float angleY = 0.0f;
+    static float angleZ = 0.0f;
+
+    if (m_rotateX) {
+        angleX += 0.5f;
+        if (angleX >= 360.0f) {
+            angleX = 0.0f;
+        }
     }
-    model = sglm::rotate(model, sglm::radians(angle), sglm::vec3(0.0f, 1.0f, 0.0f));
+    if (m_rotateY) {
+        angleY += 0.5f;
+        if (angleY >= 360.0f) {
+            angleY = 0.0f;
+        }
+    }
+    if (m_rotateZ) {
+        angleZ += 0.5f;
+        if (angleZ >= 360.0f) {
+            angleZ = 0.0f;
+        }
+    }
+    model = sglm::rotate(model, sglm::radians(angleX), sglm::vec3(1.0f, 0.0f, 0.0f));
+    model = sglm::rotate(model, sglm::radians(angleY), sglm::vec3(0.0f, 1.0f, 0.0f));
+    model = sglm::rotate(model, sglm::radians(angleZ), sglm::vec3(0.0f, 0.0f, 1.0f));
+
+
     // 셰이더 사용 및 변환 행렬 전달
     m_program->Use();
     m_program->SetUniform("view", view);

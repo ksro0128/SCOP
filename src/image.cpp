@@ -38,66 +38,51 @@ bool Image::LoadWithBmp(const std::string& filepath) {
     BMPFileHeader fileHeader;
     BMPInfoHeader infoHeader;
 
-    // Read file header 14 bytes
+    // 헤더 14바이트 읽기
     file.read(reinterpret_cast<char*>(&fileHeader), sizeof(fileHeader));
-    if (fileHeader.fileType != 0x4D42) { // Check for "BM"
+    if (fileHeader.fileType != 0x4D42) { // "BM" 인지 확인하기
         std::cerr << "Invalid BMP file: " << filepath << std::endl;
         return false;
     }
 
-    // Read info header 40 bytes
+    //  BMP 정보 헤더 40바이트 읽기
     file.read(reinterpret_cast<char*>(&infoHeader), sizeof(infoHeader));
     if (infoHeader.bitsPerPixel != 24 && infoHeader.bitsPerPixel != 32) { // 24 bits : RGB, 32 bits : RGBA
         std::cerr << "Unsupported BMP bit depth: " << infoHeader.bitsPerPixel << std::endl;
         return false;
     }
 
-    // Set image dimensions and channel count
+    // BMP 파일 정보 저장
     m_width = infoHeader.width;
-    m_height = abs(infoHeader.height); // BMP height can be negative
+    m_height = abs(infoHeader.height);
     m_channelCount = infoHeader.bitsPerPixel / 8;
 
-    // Allocate memory for image data
+    // 메모리 할당 width * height * channelCount
     m_data = (uint8_t*)malloc(m_width * m_height * m_channelCount);
+    memset(m_data, 0, m_width * m_height * m_channelCount);
     if (!m_data) {
         std::cerr << "Failed to allocate memory for BMP image" << std::endl;
         return false;
     }
 
-    // Move file cursor to pixel data
+    // 커서를 픽셀 데이터 위치로 이동
     file.seekg(fileHeader.dataOffset, file.beg);
 
-    // Read pixel data row by row (BMP data is bottom-up by default)
-    int rowSize = (m_width * m_channelCount + 3) & ~3; // Align row size to 4-byte boundary
+    // BMP 파일은 행이 4의 배수로 정렬되어 있음
+    int rowSize = (m_width * m_channelCount + 3) & ~3; // 4의 배수로 정렬
     std::unique_ptr<uint8_t[]> rowData(new uint8_t[rowSize]);
 
     for (int y = 0; y < m_height; ++y) {
         file.read(reinterpret_cast<char*>(rowData.get()), rowSize);
-        
-        // Copy data from rowData to the original position
         memcpy(m_data + y * m_width * m_channelCount, rowData.get(), m_width * m_channelCount);
     }
 
-    // Convert BGR to RGB
+    // BGR -> RGB
     if (m_channelCount >= 3) {
         for (int i = 0; i < m_width * m_height; i++) {
             uint8_t* pixel = m_data + i * m_channelCount;
-            std::swap(pixel[0], pixel[2]); // Swap R and B
+            std::swap(pixel[0], pixel[2]);
         }
     }
     return true;
-}
-
-void Image::SetCheckImage(int gridX, int gridY) {
-    for (int j = 0; j < m_height; j++) {
-        for (int i = 0; i < m_width; i++) {
-            int pos = (j * m_width + i) * m_channelCount;
-            bool even = ((i / gridX) + (j / gridY)) % 2 == 0;
-            uint8_t value = even ? 255 : 0;
-            for (int k = 0; k < m_channelCount; k++)
-                m_data[pos + k] = value;
-            if (m_channelCount > 3)
-                m_data[3] = 255;
-        }
-    }
 }

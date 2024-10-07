@@ -39,7 +39,6 @@ public:
     int GetWidth() const { return m_width; }
     int GetHeight() const { return m_height; }
     int GetChannelCount() const { return m_channelCount; }
-    void SetCheckImage(int gridX, int gridY);
 
 private:
     Image() {};

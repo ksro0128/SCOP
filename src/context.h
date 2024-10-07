@@ -13,14 +13,14 @@
 CLASS_PTR(Context)
 class Context {
 public:
-    static ContextUPtr Create();
+    static ContextUPtr Create(const std::string& objFileName, const std::string& textureFileName);
     void Render();
     void ProcessInput(GLFWwindow* window);
     void Reshape(int width, int height);
 
 private:
     Context() {}
-    bool Init();
+    bool Init(const std::string& objFileName, const std::string& textureFileName);
     ProgramUPtr m_program;
     MeshUPtr m_box;
     ModelUPtr m_model;

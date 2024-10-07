@@ -1,9 +1,9 @@
 #include "context.h"
 #include "image.h"
 
-ContextUPtr Context::Create() {
+ContextUPtr Context::Create(const std::string& objFileName, const std::string& textureFileName) {
     auto context = ContextUPtr(new Context());
-    if (!context->Init())
+    if (!context->Init(objFileName, textureFileName))
         return nullptr;
     return std::move(context);
 }
@@ -76,9 +76,9 @@ void Context::Reshape(int width, int height) {
 }
 
 
-bool Context::Init() {
+bool Context::Init(const std::string& objFileName, const std::string& textureFileName) {
     // OBJ 파일 로드
-    m_model = Model::sLoad("./resources/42.obj");
+    m_model = Model::sLoad(objFileName);
 
     if (!m_model) {
         std::cerr << "Failed to load model" << std::endl;
@@ -93,8 +93,8 @@ bool Context::Init() {
     }
 
     // 텍스쳐 이미지 로드
-    // if (textureFilename != "") {
-        auto image = Image::LoadBmp("./resources/sample.bmp");
+    if (textureFileName != "") {
+        auto image = Image::LoadBmp(textureFileName);
         if (!image) {
             std::cerr << "Failed to load image" << std::endl;
             return false;
@@ -102,7 +102,7 @@ bool Context::Init() {
         m_texture = Texture::CreateFromImage(image.get());
 
         m_program->SetUniform("mainTexture", 0);
-    // }
+    }
 
 
     // 배경색 설정

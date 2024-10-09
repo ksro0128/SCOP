@@ -122,7 +122,7 @@ private:
     float minZ = float(INT_MAX), maxZ = float(INT_MIN);
 
     // indexing
-    void Indexing();
+    bool Indexing();
     std::vector<sglm::vec3 *> m_indexedVertices;
     std::vector<sglm::vec2 *> m_indexedTexCoords;
     std::vector<sglm::vec3 *> m_indexedNormals;

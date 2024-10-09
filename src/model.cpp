@@ -56,7 +56,12 @@ bool Model::LoadBysAssimp(const std::string& filename) {
     auto glMesh = Mesh::Create(vert, indices, GL_TRIANGLES);
     m_meshes.push_back(std::move(glMesh));
 
-    std::string dirname = filename.substr(0, filename.find_last_of("/"));
+    auto idx = filename.find_last_of("/");
+    std::string dirname;
+    if (idx == std::string::npos)
+        dirname = ".";
+    else
+        dirname = filename.substr(0, idx);        
 
     if (mtls.size() > 0) {
         for (auto& m : mtls) {

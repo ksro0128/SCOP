@@ -5,7 +5,8 @@ sAssimpUPtr sAssimp::Load(const std::string& filename) {
     auto ret = sAssimpUPtr(new sAssimp());
     if (!ret->LoadBysAssimp(filename))
         return nullptr;
-    ret->Indexing();
+    if (!ret->Indexing())
+        return nullptr;
     return std::move(ret);
 }
 
@@ -16,6 +17,10 @@ bool sAssimp::LoadBysAssimp(const std::string& filename) {
         return false;
 
     size_t lastOfPointIndex = filename.find_last_of(".");
+    if (lastOfPointIndex == std::string::npos) {
+        std::cerr << "failed to load model: " << filename << " is not a Wavefront OBJ file" << std::endl;
+        return false;
+    }
     std::string obj = filename.substr(lastOfPointIndex);
     if (obj != ".obj") {
         std::cerr << "failed to load model: " << filename << " is not a Wavefront OBJ file" << std::endl;
@@ -432,22 +437,92 @@ mtl sAssimp::InitMtl() {
     return material;
 }
 
-void sAssimp::Indexing() {
-    uint32_t index = 0;
+// bool sAssimp::Indexing() {
+//     uint32_t index = 0;
 
+//     for (auto&face : m_faces) {
+//         for (int i = 0; i < face.indices.size(); i++) {
+//             int fidx = face.indices[i] - 1;
+//             if (fidx < 0 || fidx >= m_vertices.size()) {
+//                 std::cerr << "vertex index out of range" << std::endl;
+//                 return false;
+//             }
+//             int nidx = face.normals[i] - 1;
+//             if (m_normals.size() != 0 && nidx >= m_normals.size()) {
+//                 std::cerr << "normal index out of range" << std::endl;
+//                 return false;
+//             }
+//             int tidx = face.texCoords[i] - 1;
+//             if (m_texCoords.size() != 0 && tidx >= m_texCoords.size()) {
+//                 std::cerr << "texcoord index out of range" << std::endl;
+//                 return false;
+//             }
+            
+//             m_indexedVertices.push_back(&m_vertices[fidx]);
+//             if (face.texCoords[i] != 0)
+//                 m_indexedTexCoords.push_back(&m_texCoords[face.texCoords[i] - 1]);
+//             if (face.normals[i] != 0)
+//                 m_indexedNormals.push_back(&m_normals[face.normals[i] - 1]);
+//         }
+//         for (int i = 0; i < face.indices.size() - 2; i++) {
+//             m_indices.push_back(index);
+//             m_indices.push_back(index + i + 1);
+//             m_indices.push_back(index + i + 2);
+//         }
+//         index += face.indices.size();
+//     }
+//     return true;
+// }
+
+
+bool sAssimp::Indexing() {
+    uint32_t index = 0;
     for (auto&face : m_faces) {
-        for (int i = 0; i < face.indices.size(); i++) {
-            m_indexedVertices.push_back(&m_vertices[face.indices[i] - 1]);
-            if (face.texCoords[i] != 0)
-                m_indexedTexCoords.push_back(&m_texCoords[face.texCoords[i] - 1]);
-            if (face.normals[i] != 0)
-                m_indexedNormals.push_back(&m_normals[face.normals[i] - 1]);
+        for (int i = 1; i < face.indices.size() - 1; i++) { 
+            uint32_t fidx0 = face.indices[0] - 1;
+            uint32_t fidx1 = face.indices[i] - 1;
+            uint32_t fidx2 = face.indices[i + 1] - 1;
+            if (fidx0 < 0 || fidx0 >= m_vertices.size() \
+            || fidx1 < 0 || fidx1 >= m_vertices.size() \
+            || fidx2 < 0 || fidx2 >= m_vertices.size()) {
+                std::cerr << "vertex index out of range" << std::endl;
+                return false;
+            }
+            m_indexedVertices.push_back(&m_vertices[fidx0]);
+            m_indexedVertices.push_back(&m_vertices[fidx1]);
+            m_indexedVertices.push_back(&m_vertices[fidx2]);
+
+            if (face.texCoords[0] != 0) {
+                uint32_t tidx0 = face.texCoords[0] - 1;
+                uint32_t tidx1 = face.texCoords[i] - 1;
+                uint32_t tidx2 = face.texCoords[i + 1] - 1;
+                if (tidx0 < 0 || tidx1 < 0 || tidx2 < 0 || \
+                tidx0 >= m_texCoords.size() || tidx1 >= m_texCoords.size() || tidx2 >= m_texCoords.size()) {
+                    std::cerr << "texcoord index out of range" << std::endl;
+                    return false;
+                }
+                m_indexedTexCoords.push_back(&m_texCoords[tidx0]);
+                m_indexedTexCoords.push_back(&m_texCoords[tidx1]);
+                m_indexedTexCoords.push_back(&m_texCoords[tidx2]);
+            }
+
+            if (face.normals[0] != 0) {
+                uint32_t nidx0 = face.normals[0] - 1;
+                uint32_t nidx1 = face.normals[i] - 1;
+                uint32_t nidx2 = face.normals[i + 1] - 1;
+                if (nidx0 < 0 || nidx1 < 0 || nidx2 < 0 || \
+                nidx0 >= m_normals.size() || nidx1 >= m_normals.size() || nidx2 >= m_normals.size()) {
+                    std::cerr << "normal index out of range" << std::endl;
+                    return false;
+                }
+                m_indexedNormals.push_back(&m_normals[nidx0]);
+                m_indexedNormals.push_back(&m_normals[nidx1]);
+                m_indexedNormals.push_back(&m_normals[nidx2]);
+            }
+            m_indices.push_back(index++);
+            m_indices.push_back(index++);
+            m_indices.push_back(index++);
         }
-        for (int i = 0; i < face.indices.size() - 2; i++) {
-            m_indices.push_back(index);
-            m_indices.push_back(index + i + 1);
-            m_indices.push_back(index + i + 2);
-        }
-        index += face.indices.size();
     }
+    return true;
 }
